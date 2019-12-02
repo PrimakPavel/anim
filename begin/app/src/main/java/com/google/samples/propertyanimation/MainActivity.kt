@@ -29,67 +29,47 @@ import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatImageView
 
-private const val COLLAPSED_VALUE = 200
-private const val EXPANDED_VALUE = 400
+private const val DELTA_SIZE = 100
+private const val DURATION = 1000L
 
 class MainActivity : AppCompatActivity() {
+    private val star by lazy { findViewById<ImageView>(R.id.star) }
+    private val layout by lazy { findViewById<FrameLayout>(R.id.layout) }
+    private val rotateButton by lazy { findViewById<Button>(R.id.rotateButton) }
+    private val translateButton by lazy { findViewById<Button>(R.id.translateButton) }
+    private val scaleButton by lazy { findViewById<Button>(R.id.scaleButton) }
+    private val fadeButton by lazy { findViewById<Button>(R.id.fadeButton) }
+    private val colorizeButton by lazy { findViewById<Button>(R.id.colorizeButton) }
+    private val showerButton by lazy { findViewById<Button>(R.id.showerButton) }
+    private val collapsedButton by lazy { findViewById<Button>(R.id.collapseButton) }
 
-    lateinit var star: ImageView
-    lateinit var layout: FrameLayout
-    lateinit var rotateButton: Button
-    lateinit var translateButton: Button
-    lateinit var scaleButton: Button
-    lateinit var fadeButton: Button
-    lateinit var colorizeButton: Button
-    lateinit var showerButton: Button
-    lateinit var collapsedButton: Button
+    private val collapsedSize by lazy { star.height }
+    private val expandedSize by lazy { collapsedSize + DELTA_SIZE }
 
-    private var isCollapsed = false
+    private var isCollapsed = true
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        rotateButton.setOnClickListener { rotater() }
 
-        star = findViewById(R.id.star)
-        rotateButton = findViewById<Button>(R.id.rotateButton)
-        translateButton = findViewById<Button>(R.id.translateButton)
-        scaleButton = findViewById<Button>(R.id.scaleButton)
-        fadeButton = findViewById<Button>(R.id.fadeButton)
-        colorizeButton = findViewById<Button>(R.id.colorizeButton)
-        showerButton = findViewById<Button>(R.id.showerButton)
-        collapsedButton = findViewById<Button>(R.id.collapseButton)
-        layout = findViewById(R.id.layout)
+        translateButton.setOnClickListener { translater() }
 
-        rotateButton.setOnClickListener {
-            rotater()
-        }
+        scaleButton.setOnClickListener { scaler() }
 
-        translateButton.setOnClickListener {
-            translater()
-        }
+        fadeButton.setOnClickListener { fader() }
 
-        scaleButton.setOnClickListener {
-            scaler()
-        }
+        colorizeButton.setOnClickListener { colorizer() }
 
-        fadeButton.setOnClickListener {
-            fader()
-        }
+        showerButton.setOnClickListener { shower() }
 
-        colorizeButton.setOnClickListener {
-            colorizer()
-        }
-
-        showerButton.setOnClickListener {
-            shower()
-        }
         collapsedButton.setOnClickListener {
             isCollapsed = if (isCollapsed) {
-                setSizeViewAnim(EXPANDED_VALUE)
+                setSizeViewAnim(expandedSize)
                 false
             } else {
-                setSizeViewAnim(COLLAPSED_VALUE)
+                setSizeViewAnim(collapsedSize)
                 true
             }
         }
@@ -97,7 +77,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun rotater() {
         val animator = ObjectAnimator.ofFloat(star, View.ROTATION, -360f, 0f)
-        animator.duration = 1000
+        animator.duration = DURATION
         animator.disableViewDuringAnimation(rotateButton)
         animator.start()
     }
@@ -118,7 +98,7 @@ class MainActivity : AppCompatActivity() {
             layoutParams.height = value
             layout.layoutParams = layoutParams
         }
-        anim.duration = 1000
+        anim.duration = DURATION
         anim.start()
     }
 
@@ -129,7 +109,7 @@ class MainActivity : AppCompatActivity() {
             star.layoutParams.height = value
             star.requestLayout()
         }
-        anim.duration = 1000
+        anim.duration = DURATION
         anim.start()
     }
 
@@ -157,7 +137,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun colorizer() {
         val animator = ObjectAnimator.ofArgb(star.parent, "backgroundColor", Color.BLACK, Color.RED)
-        animator.duration = 500
+        animator.duration = DURATION
         animator.repeatCount = 1
         animator.repeatMode = ObjectAnimator.REVERSE
         animator.disableViewDuringAnimation(colorizeButton)
