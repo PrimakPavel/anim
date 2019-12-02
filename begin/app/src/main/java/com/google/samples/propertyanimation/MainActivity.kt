@@ -19,9 +19,11 @@ package com.google.samples.propertyanimation
 import android.animation.*
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Property
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AccelerateInterpolator
+import android.view.animation.DecelerateInterpolator
 import android.view.animation.LinearInterpolator
 import android.widget.Button
 import android.widget.FrameLayout
@@ -29,12 +31,12 @@ import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatImageView
 
+
 private const val DELTA_SIZE = 100
 private const val DURATION = 1000L
 
 class MainActivity : AppCompatActivity() {
     private val star by lazy { findViewById<ImageView>(R.id.star) }
-    private val layout by lazy { findViewById<FrameLayout>(R.id.layout) }
     private val rotateButton by lazy { findViewById<Button>(R.id.rotateButton) }
     private val translateButton by lazy { findViewById<Button>(R.id.translateButton) }
     private val scaleButton by lazy { findViewById<Button>(R.id.scaleButton) }
@@ -52,74 +54,51 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        rotateButton.setOnClickListener { rotater() }
+        rotateButton.setOnClickListener { rotater(star) }
 
-        translateButton.setOnClickListener { translater() }
+        translateButton.setOnClickListener { translater(star) }
 
-        scaleButton.setOnClickListener { scaler() }
+        scaleButton.setOnClickListener { scaler(star) }
 
-        fadeButton.setOnClickListener { fader() }
+        fadeButton.setOnClickListener { fader(star) }
 
-        colorizeButton.setOnClickListener { colorizer() }
+        colorizeButton.setOnClickListener { colorizer(star) }
 
         showerButton.setOnClickListener { shower() }
 
         collapsedButton.setOnClickListener {
             isCollapsed = if (isCollapsed) {
-                setSizeViewAnim(expandedSize)
+                animateHeightTo(star, expandedSize)
                 false
             } else {
-                setSizeViewAnim(collapsedSize)
+                animateHeightTo(star, collapsedSize)
                 true
             }
         }
     }
 
-    private fun rotater() {
-        val animator = ObjectAnimator.ofFloat(star, View.ROTATION, -360f, 0f)
+    private fun rotater(view: View) {
+        val animator = ObjectAnimator.ofFloat(view, View.ROTATION, -360f, 0f)
         animator.duration = DURATION
         animator.disableViewDuringAnimation(rotateButton)
         animator.start()
     }
 
-    private fun translater() {
-        val animator = ObjectAnimator.ofFloat(star, View.TRANSLATION_X, -200f)
+    private fun translater(view: View) {
+        val animator = ObjectAnimator.ofFloat(view, View.TRANSLATION_X, -200f)
         animator.repeatCount = 3
         animator.repeatMode = ObjectAnimator.REVERSE
         animator.disableViewDuringAnimation(translateButton)
         animator.start()
     }
 
-    private fun setHeightViewGroupAnim(newHeight: Int) {
-        val anim = ValueAnimator.ofInt(layout.measuredHeight, newHeight)
-        anim.addUpdateListener { valueAnimator ->
-            val value = valueAnimator.animatedValue as Int
-            val layoutParams = layout.layoutParams
-            layoutParams.height = value
-            layout.layoutParams = layoutParams
-        }
-        anim.duration = DURATION
-        anim.start()
-    }
-
-    private fun setSizeViewAnim(newHeight: Int) {
-        val anim = ValueAnimator.ofInt(star.measuredHeight, newHeight)
-        anim.addUpdateListener { valueAnimator ->
-            val value = valueAnimator.animatedValue as Int
-            star.layoutParams.height = value
-            star.requestLayout()
-        }
-        anim.duration = DURATION
-        anim.start()
-    }
-
-    private fun scaler() {
+    private fun scaler(view: View) {
         val scaleX = PropertyValuesHolder.ofFloat(View.SCALE_X, 4f)
         val scaleY = PropertyValuesHolder.ofFloat(View.SCALE_Y, 4f)
         val translationX = PropertyValuesHolder.ofFloat(View.TRANSLATION_X, 300f)
         val translationY = PropertyValuesHolder.ofFloat(View.TRANSLATION_Y, 300f)
         val animator = ObjectAnimator.ofPropertyValuesHolder(
-            star, translationX, translationY, scaleX, scaleY
+            view, translationX, translationY, scaleX, scaleY
         )
         animator.repeatCount = 1
         animator.repeatMode = ObjectAnimator.REVERSE
@@ -127,16 +106,16 @@ class MainActivity : AppCompatActivity() {
         animator.start()
     }
 
-    private fun fader() {
-        val animator = ObjectAnimator.ofFloat(star, View.ALPHA, 0f)
+    private fun fader(view: View) {
+        val animator = ObjectAnimator.ofFloat(view, View.ALPHA, 0f)
         animator.repeatCount = 1
         animator.repeatMode = ObjectAnimator.REVERSE
         animator.disableViewDuringAnimation(fadeButton)
         animator.start()
     }
 
-    private fun colorizer() {
-        val animator = ObjectAnimator.ofArgb(star.parent, "backgroundColor", Color.BLACK, Color.RED)
+    private fun colorizer(view: View) {
+        val animator = ObjectAnimator.ofArgb(view.parent, "backgroundColor", Color.BLACK, Color.RED)
         animator.duration = DURATION
         animator.repeatCount = 1
         animator.repeatMode = ObjectAnimator.REVERSE
@@ -185,6 +164,15 @@ class MainActivity : AppCompatActivity() {
         set.start()
     }
 
+    private fun animateHeightTo(view: View, height: Int) {
+        val currentHeight = star.height
+        val animator = ObjectAnimator.ofInt(view, HeightProperty(), currentHeight, height)
+        animator.duration = 300
+        animator.interpolator = DecelerateInterpolator()
+        animator.disableViewDuringAnimation(collapsedButton)
+        animator.start()
+    }
+
     private fun ObjectAnimator.disableViewDuringAnimation(view: View) {
         addListener(object : AnimatorListenerAdapter() {
             override fun onAnimationStart(animation: Animator?) {
@@ -195,5 +183,18 @@ class MainActivity : AppCompatActivity() {
                 view.isEnabled = true
             }
         })
+    }
+
+
+    internal class HeightProperty : Property<View, Int>(Int::class.java, "height") {
+
+        override fun get(view: View): Int {
+            return view.height
+        }
+
+        override fun set(view: View, value: Int) {
+            view.layoutParams.height = value
+            view.layoutParams = view.layoutParams
+        }
     }
 }

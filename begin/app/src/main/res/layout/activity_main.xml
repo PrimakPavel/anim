@@ -118,13 +118,6 @@
             android:layout_gravity="center"
             app:srcCompat="@drawable/ic_star" />
 
-        <FrameLayout
-            android:id="@+id/layout"
-            android:visibility="gone"
-            android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:background="@android:color/darker_gray" />
-
     </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
