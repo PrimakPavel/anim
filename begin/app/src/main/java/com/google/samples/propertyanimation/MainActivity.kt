@@ -127,7 +127,6 @@ class MainActivity : AppCompatActivity() {
         anim.addUpdateListener { valueAnimator ->
             val value = valueAnimator.animatedValue as Int
             star.layoutParams.height = value
-            star.layoutParams.width = value
             star.requestLayout()
         }
         anim.duration = 1000
